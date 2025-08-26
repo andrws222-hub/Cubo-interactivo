@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cubo 3D Interactivo</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            touch-action: none; /* Evita el scroll predeterminado en dispositivos móviles */
+        }
+        
+        .cube-container {
+            perspective: 1000px;
+        }
+        
+        .cube {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1.5s cubic-bezier(.5, 0, .5, 1);
+        }
+        
+        .face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            pointer-events: none; /* Desactiva la edición de texto en las caras */
+            user-select: none; /* Evita la selección de texto en dispositivos móviles */
+        }
+        
+        .front { background-color: #ff5733; transform: rotateY(0deg) translateZ(100px); }
+        .back { background-color: #33ff57; transform: rotateY(180deg) translateZ(100px); }
+        .right { background-color: #3357ff; transform: rotateY(90deg) translateZ(100px); }
+        .left { background-color: #ff33a1; transform: rotateY(-90deg) translateZ(100px); }
+        .top { background-color: #a133ff; transform: rotateX(90deg) translateZ(100px); }
+        .bottom { background-color: #33a1ff; transform: rotateX(-90deg) translateZ(100px); }
+    </style>
+</head>
+<body>
+
+    <div class="cube-container">
+        <div class="cube">
+            <div class="face front">DI</div>
+            <div class="face back">CA</div>
+            <div class="face right">CO</div>
+            <div class="face left">CU</div>
+            <div class="face top">?</div>
+            <div class="face bottom">?</div>
+        </div>
+    </div>
+
+    <script>
+        const cube = document.querySelector('.cube');
+        
+        let isDragging = false;
+        let lastX = 0, lastY = 0;
+        let rotateX = 0, rotateY = 0;
+        
+        const faces = [
+            { x: 0, y: 0 },
+            { x: 0, y: 180 },
+            { x: 0, y: 90 },
+            { x: 0, y: -90 },
+            { x: 90, y: 0 },
+            { x: -90, y: 0 }
+        ];
+
+        // Función para aplicar la rotación al cubo
+        function applyRotation() {
+            cube.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        }
+
+        // Lógica para girar con la barra espaciadora o con un toque en móviles
+        function rotateRandomly() {
+            const randomFace = faces[Math.floor(Math.random() * faces.length)];
+            const spins = Math.floor(Math.random() * 3 + 3);
+            rotateX = randomFace.x + (spins * 360);
+            rotateY = randomFace.y + (spins * 360);
+            applyRotation();
+        }
+        
+        // Evento para el control con el teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                rotateRandomly();
+            }
+        });
+
+        // Eventos para el control con el ratón (PC)
+        document.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - lastX;
+            const deltaY = e.clientY - lastY;
+            rotateY += deltaX * 0.5;
+            rotateX -= deltaY * 0.5;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            applyRotation();
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Eventos para el control con el dedo (móvil)
+        document.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
+            rotateRandomly(); // Gira a una cara aleatoria con el primer toque
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.touches[0].clientX - lastX;
+            const deltaY = e.touches[0].clientY - lastY;
+            rotateY += deltaX * 0.5;
+            rotateX -= deltaY * 0.5;
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
+            applyRotation();
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+    </script>
+</body>
+</html>
